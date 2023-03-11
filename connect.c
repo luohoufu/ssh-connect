@@ -54,9 +54,7 @@
  *      $ gcc connect.c -o connect -lwsock32 -liphlpapi
  *
  *  on Mac OS X environment:
- *      $ gcc connect.c -o connect -lresolv
- *    or
- *      $ gcc connect.c -o connect -DBIND_8_COMPAT=1
+ *      $ make
  *
  * How To Use
  * ==========
@@ -1291,14 +1289,11 @@ w32_tty_readpass( const char *prompt, char *buf, size_t size )
    password. We ll give it via environment variable or tty.
    Username and password for authentication are decided by
    following rules:
-
    Username is taken from
      1) server location spec (i.e. user@host:port)
      2) environment variables (see tables.1)
      3) system account name currently logged in.
-
      Table.1 Order of environment variables for username
-
         |  SOCKS v5   |  SOCKS v4   |   HTTP proxy    |
       --+-------------+-------------+-----------------+
       1 | SOCKS45_USER | SOCKS4_USER | HTTP_PROXY_USER |
@@ -1307,13 +1302,10 @@ w32_tty_readpass( const char *prompt, char *buf, size_t size )
       --+---------------------------+-----------------+
       3 |              CONNECT_USER                   |
       --+---------------------------------------------+
-
    Password is taken from
      1) by environment variables (see table.2)
      2) by entering from tty.
-
      Table.2 Order of environment variables for password
-
         |    SOCKS v5     |     HTTP proxy      |
       --+-----------------+---------------------+
       1 | SOCKS5_PASSWD   |                     |
@@ -1322,7 +1314,6 @@ w32_tty_readpass( const char *prompt, char *buf, size_t size )
       --+-----------------+---------------------+
       3 |           CONNECT_PASSWORD            |
       --+---------------------------------------+
-
       Note: SOCKS5_PASSWD which is added in rev. 1.79
             to share value with NEC SOCKS implementation.
  */
@@ -1760,7 +1751,7 @@ set_timeout(int timeout)
         alarm( 0 );
     } else {
         debug( "setting timeout: %d seconds\n", timeout );
-        signal(SIGALRM, (__sighandler_t)sig_timeout);
+        // signal(SIGALRM, (__sighandler_t)sig_timeout);
         alarm( timeout );
     }
 }
@@ -2290,12 +2281,10 @@ begin_socks5_relay( SOCKET s )
 
 /* begin SOCKS protocol 4 relaying
    And no authentication is supported.
-
    There's SOCKS protocol version 4 and 4a. Protocol version
    4a has capability to resolve hostname by SOCKS server, so
    we don't need resolving IP address of destination host on
    local machine.
-
    Environment variable SOCKS_RESOLVE directs how to resolve
    IP addess. There's 3 keywords allowed; "local", "remote"
    and "both" (case insensitive). Keyword "local" means taht
@@ -2303,17 +2292,13 @@ begin_socks5_relay( SOCKET s )
    (usualy with gethostbyname()), "remote" means by remote
    SOCKS server, "both" means to try resolving by localhost
    then remote.
-
    SOCKS4 protocol and authentication of SOCKS5 protocol
    requires user name on connect request.
    User name is determined by following method.
-
    1. If server spec has user@hostname:port format then
       user part is used for this SOCKS server.
-
    2. Get user name from environment variable LOGNAME, USER
       (in this order).
-
 */
 int
 begin_socks4_relay( SOCKET s )
